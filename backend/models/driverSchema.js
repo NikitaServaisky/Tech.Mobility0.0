@@ -3,36 +3,14 @@ const User = require('./userBaseSchema');
 
 const driverSchema = new mongoose.Schema({
     driverDetails: {
-        vehicle: {
-            licensePlate: {
-                type: String,
-            },
-            insurancePolicy: {
-                type: String,
-            },
-            insuranceExpiry: {
-                type: Date,
-            },
-        },
-        driverLicense: {
-            type: String,
-        },
-        medicalApproval: {
-            type: String,
-        },
-        bankDetails: {
-            accountNumber: {
-                type: String,
-            },
-            bankName: {
-                type: String,
-            },
-            branchCode: {
-                type: String,
-            },
-        },
+        licenseNumber: { type: String, required: true },
+        vehicleType: { type: String, required: true },
+        vehicleMake: {type: String, required: true},
+        vehicleModel: {type: String, required: true},
+        vehicleYear: {type: Number, required: true},
+        vehiclePlate: {type: Number, required: true},
     },
 });
 
-const Driver = User.discriminator('Driver', driverSchema);
+const Driver = User.discriminator('driver', driverSchema);
 module.exports = Driver;

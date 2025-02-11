@@ -9,9 +9,9 @@ function Login() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (fromData) => {
+  const handleLogin = async (formData) => {
     try {
-      const response = await axiosInstance.post("login", fromData);
+      const response = await axiosInstance.post("login", formData);
       const { token, user } = response.data;
 
       localStorage.setItem("token", token);

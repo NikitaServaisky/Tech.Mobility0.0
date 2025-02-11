@@ -1,19 +1,14 @@
 const mongoose = require('mongoose');
-const User = require('./userBaseSchema');
+const User = require('./userBaseSchema'); // נשתמש ב-User כבסיס
 
 const customerSchema = new mongoose.Schema({
     paymentDetails: {
-        creditCardNumber: {
-            type: String,
-        },
-        expirationDate: {
-            type: String,
-        },
-        cvv: {
-            type: String,
-        },
+        cardHolderName: { type: String, required: true },
+        cardNumber: { type: String, required: true },
+        expiryDate: { type: String, required: true },
+        cvv: { type: String, required: true },
     },
 });
 
-const Customer = User.discriminator('Customer', customerSchema);
+const Customer = User.discriminator('customer', customerSchema);
 module.exports = Customer;

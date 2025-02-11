@@ -1,10 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import classes from "./header.module.css";
 import Button from "../buttonComponent/button";
 import Logo from "../../assets/svg_files/logo/Logo";
 
 const Header = () => {
+  const navigate = useNavigate();
+
+  const navigateToRegister = () => {
+    return navigate("/register")
+  };
   return (
     <header className={classes.header}>
       <div className="logo">
@@ -38,12 +43,12 @@ const Header = () => {
           </Link>
         </li>
         <li className={classes.listItem}>
-          <Link to="/Log-in" className={classes.link}>
+          <Link to="/login" className={classes.link}>
             Sign-in
           </Link>
         </li>
         <li className={classes.listItem}>
-          <Button label={"Sign-up"} />
+          <Button onClick={navigateToRegister} label={"Sign-up"} />
         </li>
       </ul>
     </header>
