@@ -8,6 +8,8 @@ import Customer from "./components/registrationComponent/customerRegistration";
 import RegistrationList from "./components/registrationListComponent/registrationList";
 import Organization from "./components/registrationComponent/organizationRegistration";
 import Driver from "./components/registrationComponent/driverRegistration";
+import ProtectedRoute from "./components/protectionConponent/protection";
+import Dashboard from "./pages/dashboards";
 
 function App() {
   const router = createBrowserRouter([
@@ -29,19 +31,41 @@ function App() {
               children: [
                 {
                   index: true,
-                  element: <RegistrationList />
+                  element: <RegistrationList />,
                 },
                 {
                   path: "customer",
-                  element: <Customer />
+                  element: <Customer />,
                 },
                 {
                   path: "driver",
-                  element: <Driver />
+                  element: <Driver />,
                 },
                 {
                   path: "organization",
-                  element: <Organization />
+                  element: <Organization />,
+                },
+              ],
+            },
+            {
+              path: "dashboard",
+              element: (
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              ),
+              children: [
+                {
+                  path: "driverDashboard",
+                  element: <DriverDashboard />,
+                },
+                {
+                  path: "organizationDashboard",
+                  element: <OrganizationDashboard />,
+                },
+                {
+                  path: "customerDashboard",
+                  element: <CustomerDashboard />,
                 },
               ],
             },
