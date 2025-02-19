@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axios";
+import io from "socket.io-client"
 import List from "../../assets/lists/list";
 import Button from "../buttonComponent/button";
+
+const socket = io(process.env.REACT_APP_API_URL);
 
 const CustomerDashboard = () => {
     const [rides, setRides] = useState([]); // rides list
@@ -31,6 +34,14 @@ const CustomerDashboard = () => {
         };
 
         fetchRides();
+
+        // runtime server listner
+        
+        socket.on("rideUpdate", (updateRide) => {
+            setRides((prevRides) => prevRides.map((ride) => (ride._id === updateRide.id ? updateRide : ride)));
+        });
+
+        return () => socket.off(rideUpdate);
     }, []);
 
     const handleNewRide = async () => {
