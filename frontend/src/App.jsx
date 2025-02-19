@@ -10,6 +10,9 @@ import Organization from "./components/registrationComponent/organizationRegistr
 import Driver from "./components/registrationComponent/driverRegistration";
 import ProtectedRoute from "./components/protectionConponent/protection";
 import Dashboard from "./pages/dashboards";
+import DriverDashboard from "./components/dashboarddsComponent/driverDash";
+import OrganizationDashboard from "./components/dashboarddsComponent/organizationDash";
+import CustomerDashboard from "./components/dashboarddsComponent/customerDash";
 
 function App() {
   const router = createBrowserRouter([
@@ -56,15 +59,15 @@ function App() {
               ),
               children: [
                 {
-                  path: "driverDashboard",
+                  path: "driver",
                   element: <DriverDashboard />,
                 },
                 {
-                  path: "organizationDashboard",
+                  path: "organization",
                   element: <OrganizationDashboard />,
                 },
                 {
-                  path: "customerDashboard",
+                  path: "customer",
                   element: <CustomerDashboard />,
                 },
               ],
