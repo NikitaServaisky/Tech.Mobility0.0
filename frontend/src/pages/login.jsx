@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import Form from "../components/formComponent/form";
-import Button from "../components/buttonComponent/button";
 import { LoginFields } from "../assets/future_questions_fields/loginQuestions";
 
 function Login() {
@@ -24,10 +23,10 @@ function Login() {
   };
 
   return (
-    <div>
-      <Form fields={LoginFields} onSubmit={handleLogin}/>
+    <div className="auth-container">
+      <h2>login</h2>
+      <Form fields={LoginFields} onSubmit={handleLogin} buttonPtops={{label: "Login", className: "primary-button"}}/>
       {error && <p className="error-message">{error}</p>}
-      <Button label="Login" type="submit" className="primary-button" />
       <Link to="/register">Don`t have an account?</Link>
       <Link to="/forgot-password">Forgot the password</Link>
     </div>

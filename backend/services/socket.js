@@ -1,5 +1,4 @@
 const { Server } = require("socket.io");
-const Ride = Require("../models/rideSchema");
 
 let io;
 const drivers = new Set(); // אוסף מזהים של נהגים מחוברים

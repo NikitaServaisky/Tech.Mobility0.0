@@ -16,11 +16,8 @@ const Header = () => {
         <Logo />
       </div>
       <ul className={classes.list}>
-        <li className={classes.listItem}>
-          <Link to="/book-ride" className={classes.link}>
-            Book a ride
-          </Link>
-        </li>
+
+
         <li className={classes.listItem}>
           <Link to="/drivers" className={classes.link}>
             To our drivers

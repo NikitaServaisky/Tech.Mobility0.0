@@ -4,7 +4,7 @@ import io from "socket.io-client"
 import List from "../../assets/lists/list";
 import Button from "../buttonComponent/button";
 
-const socket = io(process.env.REACT_APP_API_URL);
+const socket = io(import.meta.env.VITE_APP_API_URL);
 
 const CustomerDashboard = () => {
     const [rides, setRides] = useState([]); // rides list

@@ -7,7 +7,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-
 const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -28,165 +27,105 @@ const userLogin = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Login successful", token, userId: user._id, role: user.role });
+      .json({
+        message: "Login successful",
+        token,
+        userId: user._id,
+        role: user.role,
+      });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Error logging in user" });
   }
 };
 
-// Register Customer
-const registerCustomer = async (req, res) => {
+const registerUser = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, phone, paymentDetails } =
-      req.body;
-    const profilePicture = req.file ? req.file.path : null;
+    const { step, email, password, firstName, lastName, phone, role, extraData } = req.body;
+    let user;
 
-    if (
-      !email ||
-      !password ||
-      !firstName ||
-      !lastName ||
-      !phone ||
-      !paymentDetails
-    ) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (step === 1) {
+      // Step 1: Base user registration
+      if (!email || !password || !firstName || !lastName || !phone || !role) {
+        return res.status(400).json({ message: "Missing required fields in step 1" });
+      }
+
+      const hashedPassword = await hashPassword(password);
+
+      user = new User({ email, password: hashedPassword, firstName, lastName, phone, role });
+      await user.save();
+
+      return res.status(201).json({ message: "Step 1 completed. Proceed to step 2", userId: user._id });
     }
 
-    const hashedPassword = await hashPassword(password);
+    if (step === 2) {
+      // Step 2: Additional role-specific details
+      user = await User.findById(req.body.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
 
-    const customer = new Customer({
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      phone,
-      role: "customer",
-      profilePicture,
-      paymentDetails: {
-        cardHolderName: paymentDetails.cardHolderName,
-        cardNumber: encryptData(paymentDetails.cardNumber),
-        expiryDate: encryptData(paymentDetails.expiryDate),
-        cvv: encryptData(paymentDetails.cvv),
-      },
-    });
+      switch (user.role) {
+        case "customer":
+          if (!extraData?.paymentDetails) return res.status(400).json({ message: "Missing payment details" });
 
-    await customer.save();
-    res
-      .status(201)
-      .json({ message: "Customer registered successfully", user: customer });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error registering customer", error: err.message });
-  }
-};
+          const customer = new Customer({
+            ...user.toObject(),
+            paymentDetails: {
+              cardHolderName: extraData.paymentDetails.cardHolderName,
+              cardNumber: encryptData(extraData.paymentDetails.cardNumber),
+              expiryDate: encryptData(extraData.paymentDetails.expiryDate),
+              cvv: encryptData(extraData.paymentDetails.cvv),
+            },
+          });
 
-// Register Driver
-const registerDriver = async (req, res) => {
-  try {
-    const { email, password, firstName, lastName, phone, driverDetails } =
-      req.body;
+          await customer.save();
+          break;
 
-    if (
-      !email ||
-      !password ||
-      !firstName ||
-      !lastName ||
-      !phone ||
-      !driverDetails ||
-      !driverDetails.licenseNumber ||
-      !driverDetails ||
-      !driverDetails.vehicleMake ||
-      !driverDetails.vehicleModel ||
-      !driverDetails.vehicleYear ||
-      !driverDetails.vehiclePlate
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Missing required fields for driver registring" });
+        case "driver":
+          if (!extraData?.driverDetails) return res.status(400).json({ message: "Missing driver details" });
+
+          const encryptedDriverLicense = encryptFile(req.file?.path || "");
+          const driver = new Driver({
+            ...user.toObject(),
+            driverDetails: {
+              ...extraData.driverDetails,
+              driverLicense: encryptedDriverLicense,
+            },
+          });
+
+          await driver.save();
+          break;
+
+        case "organization":
+          if (!extraData?.businessLicense || !extraData?.organizationName) {
+            return res.status(400).json({ message: "Missing organization details" });
+          }
+
+          const encryptedBusinessLicense = encryptFile(req.file?.path || "");
+          const organization = new Organization({
+            ...user.toObject(),
+            organizationName: extraData.organizationName,
+            address: extraData.address,
+            taxId: extraData.taxId,
+            contactPerson: extraData.contactPerson,
+            businessLicense: encryptedBusinessLicense,
+          });
+
+          await organization.save();
+          break;
+
+        default:
+          return res.status(400).json({ message: "Invalid role" });
+      }
+
+      return res.status(201).json({ message: "Registration completed", userId: user._id, role: user.role });
     }
 
-    const hashedPassword = await hashPassword(password);
-    const encryptedDriverLicense = encryptFile(req.file.path);
-
-    const driver = new Driver({
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      phone,
-      role: "driver",
-      driverDetails: {
-        licenseNumber: driverDetails.licenseNumber,
-        driverLicense: encryptedDriverLicense,
-        vehicleType: "taxi",
-        vehicleMake: driverDetails.vehicleMake,
-        vehicleModel: driverDetails.vehicleModel,
-        vehicleYear: driverDetails.vehicleYear,
-        vehiclePlate: driverDetails.vehiclePlate,
-      },
-    });
-
-    await driver.save();
-    res
-      .status(201)
-      .json({ message: "Driver registered successfully", user: driver });
+    res.status(400).json({ message: "Invalid step" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error registering driver", error: err.message });
-  }
-};
-
-//Register Organization
-const registerOrganization = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Business license is required." });
-    }
-
-    const {
-      email,
-      password,
-      organizationName,
-      address,
-      taxId,
-      contactPerson,
-      phone,
-    } = req.body;
-
-    const hashedPassword = await hashPassword(password);
-
-    const encryptedBusinessLicensePath = encryptFile(req.file.path);
-
-    const organization = new Organization({
-      email,
-      password: hashedPassword,
-      role: "organization",
-      organizationName,
-      address,
-      taxId,
-      contactPerson,
-      phone,
-      businessLicense: encryptedBusinessLicensePath,
-    });
-
-    await organization.save();
-    res.status(201).json({
-      message: "Organization registered successfully",
-      user: organization,
-    });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error registering organization", error: err.message });
+    res.status(500).json({ message: "Error registering user", error: err.message });
   }
 };
 
 module.exports = {
-  userLogin,
-  registerCustomer,
-  registerDriver,
-  registerOrganization,
+  userLogin, registerUser
 };

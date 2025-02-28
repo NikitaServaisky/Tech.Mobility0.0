@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import Field from "../../assets/fields/field";
+import Button from "../buttonComponent/button";
 import "./formStyle.css";
 
-const Form = ({ fields, onSubmit }) => {
+const Form = ({ fields, onSubmit , className="", buttonPtops }) => {
   const [formData, setFormData] = useState({});
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -12,13 +13,14 @@ const Form = ({ fields, onSubmit }) => {
     onSubmit(formData);
   };
   return (
-    <form onSubmit={handleSubmit}>
+    <form className={`custom-form${className}`} onSubmit={handleSubmit}>
       {fields.map((field) => (
-        <div key={field.name}>
-          <label htmlFor={field.name}>{field.label}</label>
+        <div className="form-group" key={field.name}>
+          <label htmlFor={field.name} className="form-label">{field.label}</label>
           <Field {...field} onChange={handleChange} />
         </div>
       ))}
+      <Button type="submit" {...buttonPtops}/>
     </form>
   );
 };
