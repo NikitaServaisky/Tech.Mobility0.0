@@ -1,10 +1,10 @@
 import React from "react";
 
-const List = ({ items, renderItem }) => {
+const List = ({ items, renderItem, className="", itemclassName="" }) => {
   return (
-  <ul className="list-contaimer">
+  <ul className={`list-container ${className}`}>
     {items.map((item, id) => (
-        <li key={id} className="list-item">
+        <li key={id} className={`list-item ${itemclassName}`}>
             {renderItem(item)}
         </li>
     ))}

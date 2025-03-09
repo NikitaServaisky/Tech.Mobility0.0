@@ -17,7 +17,7 @@ const Form = ({ fields, onSubmit , className="", buttonPtops }) => {
       {fields.map((field) => (
         <div className="form-group" key={field.name}>
           <label htmlFor={field.name} className="form-label">{field.label}</label>
-          <Field {...field} onChange={handleChange} />
+          <Field className="form-field" {...field} onChange={handleChange} />
         </div>
       ))}
       <Button type="submit" {...buttonPtops}/>

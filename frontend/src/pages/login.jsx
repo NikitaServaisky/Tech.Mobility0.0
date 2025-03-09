@@ -27,8 +27,8 @@ function Login() {
       <h2>login</h2>
       <Form fields={LoginFields} onSubmit={handleLogin} buttonPtops={{label: "Login", className: "primary-button"}}/>
       {error && <p className="error-message">{error}</p>}
-      <Link to="/register">Don`t have an account?</Link>
-      <Link to="/forgot-password">Forgot the password</Link>
+      <Link className="links" to="/register">Don`t have an account?</Link>
+      <Link className="links" to="/forgot-password">Forgot the password</Link>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Customer from "./components/registrationComponent/customerRegistration";
 import RegistrationList from "./components/registrationListComponent/registrationList";
+import { clientLinks } from "./assets/future_questions_fields/registerFirstList";
 import Organization from "./components/registrationComponent/organizationRegistration";
 import Driver from "./components/registrationComponent/driverRegistration";
 import ProtectedRoute from "./components/protectionConponent/protection";
@@ -34,7 +35,7 @@ function App() {
               children: [
                 {
                   index: true,
-                  element: <RegistrationList />,
+                  element: <RegistrationList links={clientLinks} />,
                 },
                 {
                   path: "customer",

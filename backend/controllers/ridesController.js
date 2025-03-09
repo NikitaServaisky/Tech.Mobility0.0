@@ -1,15 +1,14 @@
 const Ride = require("../models/rideSchema");
-const {getIo} = require('../services/socket');
+const { getIO } = require("../services/socket");
 
-// getting rides list by userId
+// Get rides list by userId
 const getRides = async (req, res) => {
   try {
-    const { userId } = req.query; // getting userId form request
+    const { userId } = req.query; // getting userId from request
     if (!userId) {
       return res.status(400).json({ message: "Missing userId parameter" });
     }
-
-    const rides = await Ride.find({ userId }); // getting rides for that user
+    const rides = await Ride.find({ userId }); // get rides for that user
     res.json(rides);
   } catch (err) {
     console.error("Error fetching rides", err);
@@ -17,18 +16,18 @@ const getRides = async (req, res) => {
   }
 };
 
-// aletr driver to ride
+// Get available rides (for drivers)
 const getAvailableRides = async (req, res) => {
   try {
     const rides = await Ride.find({ status: "pending" }); // search rides
     res.json(rides);
   } catch (err) {
-    console.error("Error fatching avaible rides", err);
-    res.status(500).json({ message: "שגיאה בשליפת נסיעות", err });
+    console.error("Error fetching available rides", err);
+    res.status(500).json({ message: "Error fetching rides", err });
   }
 };
 
-// create new ride and send to all drivers
+// Create a new ride and notify all drivers
 const createRide = async (req, res) => {
   try {
     const newRide = new Ride({
@@ -40,8 +39,9 @@ const createRide = async (req, res) => {
     await newRide.save();
 
     try {
-      const io = getIO(); // קבלת מופע ה-io
-      io.emit("new-ride", newRide); // שליחה לכל הנהגים
+      const io = getIO(); // get socket.io instance
+      // Emit a ride update event to all connected clients
+      io.emit("rideUpdate", newRide);
     } catch (error) {
       console.error("Socket.io error:", error);
     }

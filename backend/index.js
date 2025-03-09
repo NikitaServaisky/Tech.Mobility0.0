@@ -12,22 +12,29 @@ require("dotenv").config();
 
 const app = express();
 const http = require("http");
-const server = http.createServer(app);
+const server = http.createServer(app); // Create the HTTP server
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-//limit requests
+// Rate limiter configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: "too many requests, please try again latter.",
+  message: "too many requests, please try again later.",
 });
-app.use(limiter);
+
+// Exclude socket.io endpoints from rate limiting
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/socket.io/")) {
+    return next();
+  }
+  return limiter(req, res, next);
+});
 
 // Connect to MongoDB
 connectDB();
@@ -42,8 +49,10 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.listen(PORT, () => {
+// Initialize socket.io on the HTTP server
+initializeSocket(server);
+
+// IMPORTANT: Start the HTTP server, not the Express app directly!
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-initializeSocket(server);

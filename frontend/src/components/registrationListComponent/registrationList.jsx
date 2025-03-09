@@ -1,14 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import List from "../../assets/lists/list";
-import { clientLinks } from "../../assets/future_questions_fields/registerFirstList";
+import "./registrationListStyle.css";
 
-function RegistrationList() {
+function RegistrationList({ links }) {
   return (
-    <nav>
+    <nav className="nav-container">
       <List
-        items={clientLinks}
-        renderItem={(link) => <Link to={link.to}>{link.label}</Link>}
+        className="registration-list"
+        itemclassName="registration-list-item"
+        items={links}
+        renderItem={(link) => (
+          <Link className="list-links" to={link.to}>
+            {link.label}
+          </Link>
+        )}
       />
     </nav>
   );
