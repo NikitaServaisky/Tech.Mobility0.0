@@ -1,15 +1,39 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 
 const MapView = ({ pickup, destination, onPickupSelect }) => {
-  useEffect(() => {
-    const map = L.map("map").setView([32.0853, 34.7818], 13);
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-    }).addTo(map);
+  useEffect(() => {
+    if (!mapRef.current && mapContainerRef.current) {
+      const map = L.map(mapContainerRef.current).setView([32.0853, 34.7818], 13);
+      mapRef.current = map;
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+        if (onPickupSelect) {
+          onPickupSelect({ lat, lon: lng });
+        }
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+        map.removeLayer(layer);
+      }
+    });
 
     if (pickup) {
       L.marker([pickup.lat, pickup.lon], { title: "Pickup" }).addTo(map);
@@ -31,18 +55,10 @@ const MapView = ({ pickup, destination, onPickupSelect }) => {
         })
         .catch(err => console.error("Route error:", err));
     }
+  }, [pickup, destination]);
 
-    map.on("click", (e) => {
-      const { lat, lng } = e.latlng;
-      if (onPickupSelect) {
-        onPickupSelect({ lat, lon: lng });
-      }
-    });
-
-    return () => map.remove();
-  }, [pickup, destination, onPickupSelect]);
-
-  return <div id="map" style={{ height: "400px", width: "100%" }} />;
+  return <div ref={mapContainerRef} style={{ height: "400px", width: "100%" }} />;
 };
 
 export default MapView;
+

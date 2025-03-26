@@ -1,10 +1,16 @@
+const mongoose = require("mongoose");
 const Ride = require("../models/rideSchema");
 const { getIO } = require("../services/socket");
 
 // Get rides list by userId
 const getRides = async (req, res) => {
   try {
-    const { userId } = req.query; // getting userId from request
+    const {userId} = req.query;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid userId' });
+    }
+    
     if (!userId) {
       return res.status(400).json({ message: "Missing userId parameter" });
     }

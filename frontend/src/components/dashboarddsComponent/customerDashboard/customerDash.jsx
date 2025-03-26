@@ -5,6 +5,7 @@ import List from "../../../assets/lists/list";
 import Button from "../../buttonComponent/button";
 import MapView from "../../mapComponent/mapView";
 import { geocodeAddress } from "../../../utils/geocode";
+import { getCleanUserId } from "../../../utils/clearUser";
 import "./customerDashStyle.css";
 
 // Verify that the backend URL is correct
@@ -20,7 +21,7 @@ const CustomerDashboard = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickup, setPickup] = useState(null);
-  const [destination, setDestination] = useState(null); // hardcoded for now
+  const [destination, setDestination] = useState(null);
   const [clickCount, setClickCount] = useState(0);
   const [pickupAddress, setPickupAddress] = useState("");
   const [destinationAddress, setDestinationAddress] = useState("");
@@ -28,17 +29,17 @@ const CustomerDashboard = () => {
   useEffect(() => {
     const fetchRides = async () => {
       try {
-        const userId = localStorage.getItem("userId");
+        const userId = getCleanUserId();
         if (!userId) {
           console.error("User ID is missing");
           setLoading(false);
           return;
         }
+
         const response = await axiosInstance.get("/rides", {
           params: { userId },
-          // from: pickupAddress,
-          // destination: destinationAddress,
         });
+
         setRides(response.data);
       } catch (err) {
         console.error("Error fetching rides:", err);
@@ -49,7 +50,6 @@ const CustomerDashboard = () => {
 
     fetchRides();
 
-    // Listen for rideUpdate events from the server
     socket.on("rideUpdate", (updatedRide) => {
       setRides((prevRides) =>
         prevRides.map((ride) =>
@@ -64,21 +64,22 @@ const CustomerDashboard = () => {
   }, []);
 
   const handleNewRide = async () => {
-    const userId = JSON.parse(localStorage.getItem("userId"));
+    const userId = getCleanUserId();
     console.log("pickup location", pickupAddress);
     console.log("🚀 userId to send:", userId, typeof userId);
+
     try {
       const pickupCoords = await geocodeAddress(pickupAddress);
       const destinationCoords = await geocodeAddress(destinationAddress);
-  
+
       if (!pickupCoords || !destinationCoords || !userId) {
         alert("נא להזין כתובות תקינות לאיסוף וליעד.");
         return;
       }
-  
+
       setPickup(pickupCoords);
       setDestination(destinationCoords);
-  
+
       const newRide = {
         userId,
         from: pickupAddress,
@@ -87,16 +88,14 @@ const CustomerDashboard = () => {
         destinationCoords,
         status: "Pending",
       };
-  
+
       const response = await axiosInstance.post("/rides", newRide);
-  
       socket.emit("newRide", response.data);
     } catch (err) {
       console.error("Error creating ride", err);
       alert("משהו השתבש בעת יצירת הנסיעה.");
     }
   };
-  
 
   return (
     <div className="customer-dashboard">
