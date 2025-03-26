@@ -29,12 +29,17 @@ const getAvailableRides = async (req, res) => {
 
 // Create a new ride and notify all drivers
 const createRide = async (req, res) => {
+  console.log('req.body:', req.body);
   try {
     const newRide = new Ride({
+      userId: req.body.userId,
       from: req.body.from,
       destination: req.body.destination,
+      pickupCoords: req.body.pickupCoords,
+      destinationCoords: req.body.destinationCoords,
       status: "Pending",
     });
+    
 
     await newRide.save();
 

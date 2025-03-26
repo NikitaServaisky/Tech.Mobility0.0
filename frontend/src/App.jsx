@@ -16,6 +16,7 @@ import OrganizationDashboard from "./components/dashboarddsComponent/organizatio
 import CustomerDashboard from "./components/dashboarddsComponent/customerDashboard/customerDash";
 
 function App() {
+  console.log('all variabels for .env', import.meta.env);
   const router = createBrowserRouter([
     {
       path: "/",

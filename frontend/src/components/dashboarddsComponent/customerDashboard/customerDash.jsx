@@ -36,6 +36,8 @@ const CustomerDashboard = () => {
         }
         const response = await axiosInstance.get("/rides", {
           params: { userId },
+          // from: pickupAddress,
+          // destination: destinationAddress,
         });
         setRides(response.data);
       } catch (err) {
@@ -62,12 +64,14 @@ const CustomerDashboard = () => {
   }, []);
 
   const handleNewRide = async () => {
-    console.log("pickup location", pickupAddress)
+    const userId = JSON.parse(localStorage.getItem("userId"));
+    console.log("pickup location", pickupAddress);
+    console.log("🚀 userId to send:", userId, typeof userId);
     try {
       const pickupCoords = await geocodeAddress(pickupAddress);
       const destinationCoords = await geocodeAddress(destinationAddress);
   
-      if (!pickupCoords || !destinationCoords) {
+      if (!pickupCoords || !destinationCoords || !userId) {
         alert("נא להזין כתובות תקינות לאיסוף וליעד.");
         return;
       }
@@ -76,9 +80,12 @@ const CustomerDashboard = () => {
       setDestination(destinationCoords);
   
       const newRide = {
-        from: pickupCoords,
-        destination: destinationCoords,
-        status: "waiting",
+        userId,
+        from: pickupAddress,
+        destination: destinationAddress,
+        pickupCoords,
+        destinationCoords,
+        status: "Pending",
       };
   
       const response = await axiosInstance.post("/rides", newRide);
