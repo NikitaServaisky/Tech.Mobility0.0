@@ -17,7 +17,10 @@ const server = http.createServer(app); // Create the HTTP server
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
 app.use(helmet());
 app.use(express.json());
 

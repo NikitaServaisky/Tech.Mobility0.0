@@ -11,10 +11,11 @@ function Login() {
   const handleLogin = async (formData) => {
     try {
       const response = await axiosInstance.post("login", formData);
-      const { token, user } = response.data;
+      const { authToken, userId, role } = response.data;
 
-      localStorage.setItem("token", token);
-      localStorage, setItem("use", JSON.stringify(user));
+      localStorage.setItem("authToken", authToken);
+      localStorage.setItem("userId", JSON.stringify(userId));
+      localStorage.setItem('role', role);
 
       navigate("/dashboard");
     } catch (err) {

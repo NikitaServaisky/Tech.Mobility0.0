@@ -29,11 +29,20 @@ const encryptFile = async (filePath) => {
 
 const encryptData = (data) => {
   const algorithm = "aes-256-cbc";
-  const key = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
+
+  let key = process.env.ENCRYPTION_KEY || "";
+  if (key.length < 32) {
+    key = key.padEnd(32, " ");
+  } else if (key.length > 32) {
+    key = key.substring(0, 32);
+  }
+  const keyBuffer = Buffer.from(key, "utf-8");
+
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  const cipher = crypto.createCipheriv(algorithm, keyBuffer, iv);
   let encrypted = cipher.update(data, "utf8", "hex");
   encrypted += cipher.final("hex");
+
   return iv.toString("hex") + "-" + encrypted;
 };
 

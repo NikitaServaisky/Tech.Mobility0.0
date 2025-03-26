@@ -7,11 +7,11 @@ function Dashboard() {
 
   if (location.pathname === "/dashboard") {
     if (role === "driver") {
-      return <Navigate to="/dashboard/driverDashboard" />;
+      return <Navigate to="/dashboard/driver" />;
     } else if (role === "organization") {
-      return <Navigate to="/dashboard/organizationDashboard" />;
+      return <Navigate to="/dashboard/organization" />;
     } else {
-      return <Navigate to="/dashboard/customerDashboard" />;
+      return <Navigate to="/dashboard/customer" />;
     }
   }
 

@@ -4,16 +4,16 @@ import Root from "./pages/root";
 import ErrorElement from "./pages/errorElement";
 import Login from "./pages/login";
 import Register from "./pages/register";
-import Customer from "./components/registrationComponent/customerRegistration";
+import Customer from "./components/registrationComponent/customer/customerRegistration";
 import RegistrationList from "./components/registrationListComponent/registrationList";
 import { clientLinks } from "./assets/future_questions_fields/registerFirstList";
-import Organization from "./components/registrationComponent/organizationRegistration";
-import Driver from "./components/registrationComponent/driverRegistration";
+import Organization from "./components/registrationComponent/organization/organizationRegistration";
+import Driver from "./components/registrationComponent/drivers/driverRegistration";
 import ProtectedRoute from "./components/protectionConponent/protection";
 import Dashboard from "./pages/dashboards";
 import DriverDashboard from "./components/dashboarddsComponent/driverDash";
 import OrganizationDashboard from "./components/dashboarddsComponent/organizationDash";
-import CustomerDashboard from "./components/dashboarddsComponent/customerDash";
+import CustomerDashboard from "./components/dashboarddsComponent/customerDashboard/customerDash";
 
 function App() {
   const router = createBrowserRouter([
@@ -23,55 +23,50 @@ function App() {
       errorElement: <ErrorElement />,
       children: [
         {
-          path: "/",
+          path: "login",
+          element: <Login />,
+        },
+        {
+          path: "register",
+          element: <Register />,
           children: [
             {
-              path: "login",
-              element: <Login />,
+              index: true,
+              element: <RegistrationList links={clientLinks} />,
             },
             {
-              path: "register",
-              element: <Register />,
-              children: [
-                {
-                  index: true,
-                  element: <RegistrationList links={clientLinks} />,
-                },
-                {
-                  path: "customer",
-                  element: <Customer />,
-                },
-                {
-                  path: "driver",
-                  element: <Driver />,
-                },
-                {
-                  path: "organization",
-                  element: <Organization />,
-                },
-              ],
+              path: "customer",
+              element: <Customer />,
             },
             {
-              path: "dashboard",
-              element: (
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              ),
-              children: [
-                {
-                  path: "driver",
-                  element: <DriverDashboard />,
-                },
-                {
-                  path: "organization",
-                  element: <OrganizationDashboard />,
-                },
-                {
-                  path: "customer",
-                  element: <CustomerDashboard />,
-                },
-              ],
+              path: "driver",
+              element: <Driver />,
+            },
+            {
+              path: "organization",
+              element: <Organization />,
+            },
+          ],
+        },
+        {
+          path: "dashboard",
+          element: (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          ),
+          children: [
+            {
+              path: "driver",
+              element: <DriverDashboard />,
+            },
+            {
+              path: "organization",
+              element: <OrganizationDashboard />,
+            },
+            {
+              path: "customer",
+              element: <CustomerDashboard />,
             },
           ],
         },

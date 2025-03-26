@@ -8,7 +8,7 @@ const userBaseSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true },
   role: { type: String, enum: ['customer', 'driver', 'organization'], required: true },
   isVerified: { type: Boolean, default: false },
-  profilePicture: { type: String, default: null },
+  profilePicture: { type: String, default: null, required: false },
   createdAt: { type: Date, default: Date.now },
 }, { discriminatorKey: 'role' });
 

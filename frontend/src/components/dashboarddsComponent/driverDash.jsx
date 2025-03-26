@@ -4,8 +4,10 @@ import io from "socket.io-client"
 import List from "../../assets/lists/list";
 import Button from "../buttonComponent/button";
 
-const socket = io(import.meta.env.VITE_APP_API_URL);
-
+const socket = io(import.meta.env.VITE_APP_API_URL, {
+  withCredentials: true,
+  transports: ['websocket', 'polling'],
+});
 const DriverDashboard = () => {
     const [rides, setRides] = useState([]); // rides list
     const [loading, setLoading] = useState(true); // loader
