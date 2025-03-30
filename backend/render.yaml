@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: tech-mobility-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: JWT_SECRET_WORD
+        value: yourSecretKeyHere
+      - key: ENCRYPTION_KEY
+        value: your32ByteHexKeyHere
+      - key: MONGODB_URI
+        value: yourMongoConnectionHere
