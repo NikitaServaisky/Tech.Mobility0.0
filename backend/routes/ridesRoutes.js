@@ -1,10 +1,13 @@
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { getRides, getAvailableRides, createRide } = require("../controllers/ridesController");
+const { getRides, getAvailableRides, createRide, getActiveRides, getRideHistory, acceptRide } = require("../controllers/ridesController");
 const router = express.Router();
 
+router.post("/", authMiddleware, createRide);
 router.get("/", authMiddleware, getRides);
 router.get("/available", getAvailableRides);
-router.post("/", authMiddleware, createRide);
+router.get("/active", authMiddleware, getActiveRides);
+router.get("/history", authMiddleware, getRideHistory);
+router.put("/:rideId/accept", authMiddleware, acceptRide);
 
 module.exports = router;

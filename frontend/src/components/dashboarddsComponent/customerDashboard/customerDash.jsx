@@ -25,37 +25,87 @@ const CustomerDashboard = () => {
   const [clickCount, setClickCount] = useState(0);
   const [pickupAddress, setPickupAddress] = useState("");
   const [destinationAddress, setDestinationAddress] = useState("");
+  const [activeRides, setActiveRides] = useState([]);
+  const [rideHistory, setRideHistory] = useState([]);
 
   useEffect(() => {
+    const userId = getCleanUserId();
+    if (!userId) {
+      console.error("User ID is missing");
+      setLoading(false);
+      return;
+    }
+
     const fetchRides = async () => {
       try {
-        const userId = getCleanUserId();
-        if (!userId) {
-          console.error("User ID is missing");
-          setLoading(false);
-          return;
-        }
-
         const response = await axiosInstance.get("/rides", {
           params: { userId },
         });
-
         setRides(response.data);
       } catch (err) {
         console.error("Error fetching rides:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchRides();
+    const fetchActive = async () => {
+      try {
+        const response = await axiosInstance.get("/rides/active", {
+          params: { userId },
+        });
+        setActiveRides(response.data);
+      } catch (err) {
+        console.error("Error fetching active rides:", err);
+      }
+    };
 
+    const fetchHistory = async () => {
+      try {
+        const response = await axiosInstance.get("/rides/history", {
+          params: { userId },
+        });
+        setRideHistory(response.data);
+      } catch (err) {
+        console.error("Error fetching ride history:", err);
+      }
+    };
+
+    // קריאה ראשונית לנתונים
+    const fetchAllRides = async () => {
+      setLoading(true);
+      await Promise.all([fetchRides(), fetchActive(), fetchHistory()]);
+      setLoading(false);
+    };
+
+    fetchAllRides();
+
+    // האזנה לשינויים בזמן אמת
     socket.on("rideUpdate", (updatedRide) => {
-      setRides((prevRides) =>
-        prevRides.map((ride) =>
-          ride._id === updatedRide._id ? updatedRide : ride
-        )
-      );
+      console.log("rideUpdate received:", updatedRide);
+
+      if (["Pending", "Accepted", "InProgress"].includes(updatedRide.status)) {
+        setActiveRides((prev) => {
+          const exists = prev.find((r) => r._id === updatedRide._id);
+          return exists
+            ? prev.map((r) => (r._id === updatedRide._id ? updatedRide : r))
+            : [...prev, updatedRide];
+        });
+      } else if (["Completed", "Cancelled"].includes(updatedRide.status)) {
+        setRideHistory((prev) => {
+          const exists = prev.find((r) => r._id === updatedRide._id);
+          return exists
+            ? prev.map((r) => (r._id === updatedRide._id ? updatedRide : r))
+            : [...prev, updatedRide];
+        });
+
+        setActiveRides((prev) => prev.filter((r) => r._id !== updatedRide._id));
+      }
+
+      setRides((prev) => {
+        const exists = prev.find((r) => r._id === updatedRide._id);
+        return exists
+          ? prev.map((r) => (r._id === updatedRide._id ? updatedRide : r))
+          : [...prev, updatedRide];
+      });
     });
 
     return () => {
@@ -88,6 +138,8 @@ const CustomerDashboard = () => {
         destinationCoords,
         status: "Pending",
       };
+
+      console.log("📦 rideData:", newRide);
 
       const response = await axiosInstance.post("/rides", newRide);
       socket.emit("newRide", response.data);
@@ -148,6 +200,31 @@ const CustomerDashboard = () => {
           }
         }}
       />
+      <h3>נסיעות פעילות</h3>
+      {activeRides.length > 0 ? (
+        activeRides.map((ride) => (
+          <div key={ride._id} className="ride-item">
+            <p>מאיפה: {ride.from}</p>
+            <p>לאן: {ride.destination}</p>
+            <p>סטטוס: {ride.status}</p>
+          </div>
+        ))
+      ) : (
+        <p>אין נסיעות פעילות כרגע.</p>
+      )}
+
+      <h3>היסטוריית נסיעות</h3>
+      {rideHistory.length > 0 ? (
+        rideHistory.map((ride) => (
+          <div key={ride._id} className="ride-item">
+            <p>מאיפה: {ride.from}</p>
+            <p>לאן: {ride.destination}</p>
+            <p>סטטוס: {ride.status}</p>
+          </div>
+        ))
+      ) : (
+        <p>אין היסטוריית נסיעות עדיין.</p>
+      )}
     </div>
   );
 };

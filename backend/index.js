@@ -5,7 +5,7 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./services/dataBase");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardsRoutes");
-const ridesRoute = require("./routes/ridesRoutes");
+const ridesRoutes = require("./routes/ridesRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const { initializeSocket } = require("./services/socket");
 require("dotenv").config();
@@ -45,7 +45,7 @@ connectDB();
 // Routes
 app.use("/", authRoutes);
 app.use("/dashboard", dashboardRoutes);
-app.use("/rides", ridesRoute);
+app.use("/rides", ridesRoutes);
 app.use("/driver", driverRoutes);
 
 app.get("/", (req, res) => {

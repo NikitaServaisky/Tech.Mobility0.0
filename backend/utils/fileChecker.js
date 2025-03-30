@@ -1,10 +1,7 @@
-const fileCheck = (req, user) => {
-  if (req.file) {
-    console.log("✅ File detected:", req.file.filename);
-    fileCheck(req, newUser);
-  } else {
-    console.log("⚠️ No file uploaded.");
-  }
+const fileCheck = (file) => {
+  const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+  return file && validTypes.includes(file.mimetype);
 };
 
 module.exports = { fileCheck };
+

@@ -4,7 +4,7 @@ const Field = ({ name, label, type, options, required, onChange, ...rest }) => {
   switch (type) {
     case "select":
       return (
-        <select name={name} {...rest} required={required} onChange={onChange}>
+        <select name={name} required={required} onChange={onChange} {...rest}>
           {options?.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -12,6 +12,7 @@ const Field = ({ name, label, type, options, required, onChange, ...rest }) => {
           ))}
         </select>
       );
+
     case "radio":
       return (
         <div>
@@ -21,33 +22,34 @@ const Field = ({ name, label, type, options, required, onChange, ...rest }) => {
                 type="radio"
                 name={name}
                 value={option.value}
-                {...rest}
                 required={required}
                 onChange={onChange}
+                {...rest}
               />
               {option.label}
             </label>
           ))}
         </div>
       );
-    case "file":
-      return (
-        <input
-          type="file"
-          name={name}
-          required={required}
-          onChange={(e) => {
-            if (e.target.files.length > 0) {
-              console.log("✅ File selected:", e.target.files[0].name);
-              onChange({ target: { name, value: e.target.files[0] } }); // 🔥 Fix: Ensure event format
-            } else {
-              console.log("⚠️ No file selected.");
-              onChange({ target: { name, value: null } });
-            }
-          }}
-          {...rest}
-        />
-      );
+
+      case "file":
+        return (
+          <input
+            type="file"
+            name={name}
+            required={required}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                console.log(`📂 File selected [${name}]:`, file);
+                onChange({ target: { name, value: file } }); // Simulate normal input event
+              }
+            }}
+            {...rest}
+          />
+        );
+           
+
     default:
       return (
         <input

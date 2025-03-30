@@ -33,11 +33,11 @@ function DriverStepOne({ onNext }) {
         "register/driver",
         requestData,
         {
-          headers: { "Content-Type": "applicatioln/json" },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
-      console, log("Step 1 Response:", response.data);
+      console.log("Step 1 Response:", response.data);
       onNext(response.data.userId);
     } catch (err) {
       console.error("Error in step 1:", err.response?.data || err);

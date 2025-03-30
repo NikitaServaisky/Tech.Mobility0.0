@@ -10,7 +10,7 @@ const userBaseSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   profilePicture: { type: String, default: null, required: false },
   createdAt: { type: Date, default: Date.now },
-}, { discriminatorKey: 'role' });
+}, { discriminatorKey: 'userType' });
 
 const User = mongoose.model('User', userBaseSchema);
 module.exports = User;

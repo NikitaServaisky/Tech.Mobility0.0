@@ -11,7 +11,7 @@ import Organization from "./components/registrationComponent/organization/organi
 import Driver from "./components/registrationComponent/drivers/driverRegistration";
 import ProtectedRoute from "./components/protectionConponent/protection";
 import Dashboard from "./pages/dashboards";
-import DriverDashboard from "./components/dashboarddsComponent/driverDash";
+import DriverDashboard from "./components/dashboarddsComponent/driverDashboard/driverDash";
 import OrganizationDashboard from "./components/dashboarddsComponent/organizationDash";
 import CustomerDashboard from "./components/dashboarddsComponent/customerDashboard/customerDash";
 

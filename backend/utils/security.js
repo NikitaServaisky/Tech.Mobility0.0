@@ -11,7 +11,11 @@ const encryptFile = async (filePath) => {
   const algorithm = "aes-256-cbc";
   const key = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
   const iv = crypto.randomBytes(16);
+  if (!process.env.ENCRYPTION_KEY) {
+    throw new Error("Missing ENCRYPTION_KEY in .env");
+  }  
   try {
+    console.log("🔐 Starting encryption for:", filePath);
     const fileData = await fs.readFile(filePath);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     const encryptedData = Buffer.concat([
@@ -19,13 +23,16 @@ const encryptFile = async (filePath) => {
       cipher.final(),
     ]);
     const encryptedFile = Buffer.concat([iv, encryptedData]);
-    const encryptedFilePath = filePath + " .enc";
+    const encryptedFilePath = filePath + ".enc";
     await fs.writeFile(encryptedFilePath, encryptedFile);
+    console.log("✅ File encrypted and saved at:", encryptedFilePath);
     return encryptedFilePath;
   } catch (err) {
-    throw new Error("file encryption failed: " + err.massege);
+    console.error("❌ Encryption error:", err);
+    throw new Error("file encryption failed: " + err.message);
   }
 };
+
 
 const encryptData = (data) => {
   const algorithm = "aes-256-cbc";

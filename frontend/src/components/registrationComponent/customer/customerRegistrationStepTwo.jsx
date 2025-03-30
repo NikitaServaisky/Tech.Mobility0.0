@@ -10,33 +10,24 @@ function CustomerStep2({ userId }) {
   const handleSubmit = async (data) => {
     try {
       const requestData = new FormData();
-  
-      const extraData = {
-        paymentDetails: {
-          cardHolderName: data.cardHolderName,
-          cardNumber: data.cardNumber,
-          expiryDate: data.expiryDate,
-          cvv: data.cvv,
-        },
-      };
-  
-      requestData.append("step", "2");
+
+      requestData.append("step", 2);
       requestData.append("userId", userId);
       requestData.append("extraData", JSON.stringify(extraData));
-  
-      // ✅ Append file ONLY IF it exists
-      if (data.profilePicture) {
-        console.log("✅ File added to FormData:", data.profilePicture.name);
-        requestData.append("profilePicture", data.profilePicture);
-      } else {
-        console.log("⚠️ No profile picture uploaded.");
+      
+      if (data.driverLicense) {
+        console.log("📤 driverLicense sending:", data.driverLicense.name);
+        requestData.append("driverLicense", data.driverLicense);
       }
-  
-      console.log("🚀 Sending Step 2 data:", requestData);
-  
-      const response = await axiosInstance.post("/register/customer/step2", requestData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      
+      if (data.vehiclePhoto) {
+        console.log("📤 vehiclePhoto sending:", data.vehiclePhoto.name);
+        requestData.append("vehiclePhoto", data.vehiclePhoto);
+      }
+      
+      const response = await axiosInstance.post("register/driver/step2", requestData);
+      // 👆 בלי headers בכלל!
+      
   
       console.log("✅ Step 2 Response:", response.data);
   
