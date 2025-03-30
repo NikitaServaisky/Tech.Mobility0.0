@@ -3,8 +3,8 @@ services:
     name: tech-mobility-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: JWT_SECRET_WORD
         value: busStation
