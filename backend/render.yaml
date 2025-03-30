@@ -7,8 +7,8 @@ services:
     startCommand: cd backend && npm start
     envVars:
       - key: JWT_SECRET_WORD
-        value: yourSecretKeyHere
+        value: busStation
       - key: ENCRYPTION_KEY
-        value: your32ByteHexKeyHere
+        value: af18e98f25bc7a90bb3a4fe2b624df78c8126d7597e3a084b45d3a1e17a1f927
       - key: MONGODB_URI
-        value: yourMongoConnectionHere
+        value: mongodb+srv://servaiski:ytomZp2DcdMGoCGc@<cluster-url>/test?retryWrites=true&w=majority
