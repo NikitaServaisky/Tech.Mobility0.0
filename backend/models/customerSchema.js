@@ -9,6 +9,11 @@ const customerSchema = new mongoose.Schema({
     cvv: { type: String, required: false },
   },
   profilePicture: { type: String, default: null },
+  customerMetrics: {
+    totalRides: {type: Number, default: 0},
+    totalSpent: {type: Number, default: 0},
+    visittedAddresses: [{type: String}],
+  }
 });
 
 const Customer = User.discriminator("customer", customerSchema);

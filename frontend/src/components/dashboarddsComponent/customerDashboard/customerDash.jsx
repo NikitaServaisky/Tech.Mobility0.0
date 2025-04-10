@@ -27,9 +27,11 @@ const CustomerDashboard = () => {
   const [destinationAddress, setDestinationAddress] = useState("");
   const [activeRides, setActiveRides] = useState([]);
   const [rideHistory, setRideHistory] = useState([]);
+  const [driverLocation, setDriverLocation] = useState({});
+
+  const userId = getCleanUserId();
 
   useEffect(() => {
-    const userId = getCleanUserId();
     if (!userId) {
       console.error("User ID is missing");
       setLoading(false);
@@ -108,8 +110,16 @@ const CustomerDashboard = () => {
       });
     });
 
+    socket.on("driverLocation", ({ driverId, coords }) => {
+      setDriverLocation((prev) => ({
+        ...prev,
+        [driverId]: coords,
+      }));
+    });
+
     return () => {
       socket.off("rideUpdate");
+      socket.off("driverLocation");
     };
   }, []);
 
@@ -146,6 +156,17 @@ const CustomerDashboard = () => {
     } catch (err) {
       console.error("Error creating ride", err);
       alert("משהו השתבש בעת יצירת הנסיעה.");
+    }
+  };
+
+  const handleCancelRide = async (rideId) => {
+    try {
+      const response = await axiosInstance.put(`/rides/${rideId}/cancel`);
+      alert("הנסיעה בוטלה בהצלחה");
+      console.log("cancel response", response.data);
+    } catch (err) {
+      console.error("Error cancelling ride:", err);
+      alert("שגיאה בביטול הנסיעה");
     }
   };
 
@@ -199,6 +220,7 @@ const CustomerDashboard = () => {
             setClickCount(1);
           }
         }}
+        driverLocation={driverLocation}
       />
       <h3>נסיעות פעילות</h3>
       {activeRides.length > 0 ? (
@@ -207,6 +229,12 @@ const CustomerDashboard = () => {
             <p>מאיפה: {ride.from}</p>
             <p>לאן: {ride.destination}</p>
             <p>סטטוס: {ride.status}</p>
+            {["Pending", "Accepted"].includes(ride.status) && (
+              <Button
+                onClick={() => handleCancelRide(ride._id)} // ← חובה כך
+                label="בטל נסיעה"
+              />
+            )}
           </div>
         ))
       ) : (

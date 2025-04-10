@@ -17,6 +17,11 @@ const driverSchema = new mongoose.Schema({
     },
     driverLicense: { type: String, required: true },
     vehiclePhoto: { type: String, required: false },
+    stats: {
+      acceptedRides: {type: Number, default: 0},
+      rejectedRides: {type: Number, default: 0},
+      totalEarnings: {type: Number, default: 0},
+    }
 });
 
 const Driver = User.discriminator('driver', driverSchema);

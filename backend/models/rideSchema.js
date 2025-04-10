@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const rideSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   driverId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -19,9 +24,34 @@ const rideSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Pending", "Accepted", "InProgress", "Completed", "Cancelled"],
+    enum: [
+      "Pending",
+      "Accepted",
+      "InProgress",
+      "Completed",
+      "Cancelled",
+      "Rejected",
+    ],
     default: "Pending",
   },
+  tempPassengers: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      from: String,
+      to: String,
+      pickupCoords: {
+        lat: Number,
+        lon: Number,
+      },
+      destinationCoords: {
+        lat: Number,
+        lon: Number,
+      },
+      price: Number,
+      acceptedByMainRider: Boolean,
+      acceptedByPassenger: Boolean,
+    },
+  ],
 });
 
 rideSchema.pre("save", function (next) {
