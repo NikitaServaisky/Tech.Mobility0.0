@@ -85,53 +85,29 @@ const registerUser = async (req, res) => {
       if (!req.body.userId) {
         return res.status(400).json({ message: "User ID is required for step 2" });
       }
-
-      console.log("📥 Step 2 triggered with body:", req.body);
-      console.log("📂 Uploaded Files:", req.files);
-      if (req.files?.driverLicense?.[0]) {
-        const file = req.files.driverLicense[0];
-        console.log("📥 Driver License File Info:");
-        console.log("• originalname:", file.originalname);
-        console.log("• mimetype:", file.mimetype);
-        console.log("• size:", file.size);
-        console.log("• path:", file.path);
-      } else {
-        console.warn("⚠️ Driver License file is missing in req.files!");
-      }      
-
+    
       const user = await User.findById(req.body.userId);
       if (!user) return res.status(404).json({ message: "User not found" });
-
-      let encryptedDriverLicensePath = null;
-      let vehiclePhotoPath = null;
-
-      if (req.files?.driverLicense?.[0]) {
+    
+      if (user.role === "driver") {
+        if (!req.files?.driverLicense?.[0]) {
+          return res.status(400).json({ message: "Missing driver license file." });
+        }
+    
         const driverLicenseFile = req.files.driverLicense[0];
-        console.log("✅ Driver License File:", driverLicenseFile);
-        console.log("Driver License mimetype:", driverLicenseFile.mimetype);
         const isValid = fileCheck(driverLicenseFile);
         if (!isValid) {
           return res.status(400).json({ message: "Invalid driver license file type." });
         }
-        console.log("📁 Driver License path before encryption:", driverLicenseFile.path);
-
-        encryptedDriverLicensePath = await encryptFile(driverLicenseFile.path);
-      } else {
-        return res.status(400).json({ message: "Missing driver license file." });
-      }
-
-      if (req.files?.vehiclePhoto?.[0]) {
-        vehiclePhotoPath = req.files.vehiclePhoto[0].path;
-      }
-
-      let newUser;
-
-      if (user.role === "driver") {
+    
+        const encryptedDriverLicensePath = await encryptFile(driverLicenseFile.path);
+        const vehiclePhotoPath = req.files?.vehiclePhoto?.[0]?.path || null;
+    
         if (!extraData?.driverDetails) {
           return res.status(400).json({ message: "Missing driver details" });
         }
-
-        newUser = new Driver({
+    
+        const newUser = new Driver({
           _id: user._id,
           email: user.email,
           password: user.password,
@@ -153,18 +129,55 @@ const registerUser = async (req, res) => {
             },
           },
           driverLicense: encryptedDriverLicensePath,
-          vehiclePhoto: vehiclePhotoPath || null,
+          vehiclePhoto: vehiclePhotoPath,
         });
-
+    
         await User.findByIdAndDelete(user._id);
         await newUser.save();
-
+    
         const authToken = jwt.sign(
           { userId: newUser._id, role: newUser.role },
           process.env.JWT_SECRET_WORD,
           { expiresIn: "24h" }
         );
-
+    
+        return res.status(201).json({
+          message: "Registration completed",
+          userId: newUser._id,
+          role: newUser.role,
+          token: authToken,
+        });
+      } else if (user.role === "customer") {
+        if (!req.file) {
+          return res.status(400).json({ message: "Missing profile picture" });
+        }
+    
+        const newUser = new Customer({
+          _id: user._id,
+          email: user.email,
+          password: user.password,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          role: user.role,
+          profilePicture: req.file.path,
+          paymentDetails: {
+            cardHolderName: req.body.cardHolderName,
+            cardNumber: req.body.cardNumber,
+            expiryDate: req.body.expiryDate,
+            cvv: req.body.cvv,
+          },
+        });
+    
+        await User.findByIdAndDelete(user._id);
+        await newUser.save();
+    
+        const authToken = jwt.sign(
+          { userId: newUser._id, role: newUser.role },
+          process.env.JWT_SECRET_WORD,
+          { expiresIn: "24h" }
+        );
+    
         return res.status(201).json({
           message: "Registration completed",
           userId: newUser._id,
@@ -172,9 +185,10 @@ const registerUser = async (req, res) => {
           token: authToken,
         });
       }
-
+    
       return res.status(400).json({ message: "Unsupported role for step 2" });
     }
+    
 
     return res.status(400).json({ message: "Invalid step" });
   } catch (err) {

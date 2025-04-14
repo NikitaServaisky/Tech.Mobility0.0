@@ -31,7 +31,7 @@ const createRide = async (req, res) => {
   console.log("📥 req.body received at /rides:", req.body);
 
   if (req.user.role !== "customer") {
-    return res.status(403).json({message: "Only customers can create rides"});
+    return res.status(403).json({ message: "Only customers can create rides" });
   }
   try {
     const newRide = new Ride({
@@ -49,7 +49,7 @@ const createRide = async (req, res) => {
       userId: req.user.userId,
       from: req.body.from,
       destination: req.body.destination,
-    });    
+    });
 
     const io = getIO(); // get socket.io instance
     // Emit a ride update event to all connected clients
@@ -89,7 +89,7 @@ const getRideHistory = async (req, res) => {
 const acceptRide = async (req, res) => {
   const { rideId } = req.params;
   const { driverId } = req.body;
-  console.log("Accepting ride with:", {rideId, driverId});
+  console.log("Accepting ride with:", { rideId, driverId });
 
   try {
     if (
@@ -134,11 +134,15 @@ const cancelRide = async (req, res) => {
 
     // ✅ כאן התיקון
     if (!ride.userId || ride.userId.toString() !== userId) {
-      return res.status(403).json({ message: "You can only cancel your own rides" });
+      return res
+        .status(403)
+        .json({ message: "You can only cancel your own rides" });
     }
 
     if (!["Pending", "Accepted"].includes(ride.status)) {
-      return res.status(400).json({ message: "Ride cannot be cancelled at this stage" });
+      return res
+        .status(400)
+        .json({ message: "Ride cannot be cancelled at this stage" });
     }
 
     ride.status = "Cancelled";
@@ -160,7 +164,10 @@ const rejectRide = async (req, res) => {
 
   try {
     // בדיקת תקינות מזהים
-    if (!mongoose.Types.ObjectId.isValid(rideId) || !mongoose.Types.ObjectId.isValid(driverId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(rideId) ||
+      !mongoose.Types.ObjectId.isValid(driverId)
+    ) {
       return res.status(400).json({ message: "Invalid rideId or driverId" });
     }
 
@@ -204,6 +211,99 @@ const rejectRide = async (req, res) => {
   }
 };
 
+const requestJoinRide = async (req, res) => {
+  const { rideId } = req.params;
+  const { userId, from, to, pickupCoords, destinationCoords, price } = req.body;
+
+  if (
+    !mongoose.Types.ObjectId.isValid(rideId) ||
+    !mongoose.Types.ObjectId.isValid(userId)
+  ) {
+    return res.status(400).json({ message: "Invalid rideId or userId" });
+  }
+
+  try {
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    if (!["Pending", "Accepted", "InProgress"].includes(ride.status)) {
+      return res.status(400).json({ message: "Ride is not active" });
+    }
+
+    const alreadyExists = ride.tempPassengers.some(
+      (p) => p.userId.toString() === userId
+    );
+
+    if (alreadyExists) {
+      return res
+        .status(400)
+        .json({ message: "already requested to join this ride" });
+    }
+
+    //add tempPassengers
+    ride.tempPassengers.push({
+      userId,
+      from,
+      to,
+      pickupCoords,
+      destinationCoords,
+      price,
+      acceptedByPassenger: true,
+      acceptedByMainRider: false,
+    });
+
+    await ride.save();
+
+    const io = getIO();
+    io.emit("rideUpdate", ride);
+
+    res.status(200).json({ message: "Join request sent", ride });
+  } catch (err) {
+    console.error("Error requesting to join ride:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const approveJoinRequest = async (req, res) => {
+  const {rideId, tempPassengerId} = req.params;
+  const userId = req.user.userId;
+
+  if (!mongoose.Types.ObjectId.isValid(rideId) || !mongoose.Types.ObjectId.isValid(tempPassengerId)) {
+    return res.status(400).json({message: 'Invalid rideId or passengerId'});
+  }
+
+  try {
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return res.status(404).json({message: 'Ride not found'});
+    }
+
+    if (ride.userId.toString() !== userId) {
+      return res.status(403).json({message: 'Only main rider can approve passengers'});
+    }
+
+    const tempPassenger = ride.tempPassengers.find(
+      (p) => p.userId.toString() === tempPassengerId
+    );
+
+    if (!tempPassenger) {
+      return res.status(404).json({message: 'Passenger not found ride'});
+    }
+
+    tempPassenger.acceptedByMainRider = true;
+    await ride.save();
+
+    const io = getIO();
+    io.emit('rideUpdate', ride);
+
+    res.status(200).json({message: 'Passenger approved'});
+  } catch (err) {
+    console.error("Error approving passenger:", err);
+    res.status(500).json({message: 'server error'});
+  }
+};
 
 module.exports = {
   getRides,
@@ -213,4 +313,6 @@ module.exports = {
   acceptRide,
   cancelRide,
   rejectRide,
+  requestJoinRide,
+  approveJoinRequest,
 };
