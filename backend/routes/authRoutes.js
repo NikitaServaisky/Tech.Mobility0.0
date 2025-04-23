@@ -11,8 +11,10 @@ const {
   customerStepTwoValidator,
 } = require("../validators/registerStepTwoValidator");
 const validate = require("../middlewares/ValidateRequestMidleware");
+const { limiter } = require("../utils/limiter");
+const handleUploadsErrorsMiddlware = require('../middlewares/handelUploadsErrorsMiddlware');
 
-router.post("/login", loginValidater, validate, userLogin);
+router.post("/login", limiter, loginValidater, validate, userLogin);
 
 // ✅ Customer Registration (Step 1: No File, Step 2: Payment Info & Profile Picture)
 router.post(
@@ -29,6 +31,7 @@ router.post(
 router.post(
   "/register/customer/step2",
   upload.single("profilePicture"),
+  handleUploadsErrorsMiddlware,
   customerStepTwoValidator,
   validate,
   (req, res, next) => {
@@ -59,6 +62,7 @@ router.post(
     { name: "driverLicense", maxCount: 1 },
     { name: "vehiclePhoto", maxCount: 1 },
   ]),
+  handleUploadsErrorsMiddlware,
   driverStepTwoValidator,
   validate,
   (req, res, next) => {

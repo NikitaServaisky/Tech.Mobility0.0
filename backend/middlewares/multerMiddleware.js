@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto")
 
 const uploadDir = path.join(__dirname, "../uploads");
 
@@ -14,15 +15,15 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, ext);
-    const uniqueName = `${Date.now()}_${baseName}${ext}`;
-    cb(null, uniqueName);
+    const ext = path.extname(file.originalname).toLowerCase();
+    const randomName = crypto.randomBytes(16).toString("hex");
+    const safeFilename = `${Date.now()}_${randomName}${ext}`;
+    cb(null, safeFilename);
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
