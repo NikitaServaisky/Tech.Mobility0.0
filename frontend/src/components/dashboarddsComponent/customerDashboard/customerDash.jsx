@@ -123,6 +123,7 @@ const CustomerDashboard = () => {
     };
   }, []);
 
+  // Creating new ride customer
   const handleNewRide = async () => {
     const userId = getCleanUserId();
     console.log("pickup location", pickupAddress);
@@ -151,7 +152,7 @@ const CustomerDashboard = () => {
 
       console.log("📦 rideData:", newRide);
 
-      const response = await axiosInstance.post("/rides", newRide);
+      const response = await axiosInstance.post("/rides/create-ride", newRide);
       socket.emit("newRide", response.data);
     } catch (err) {
       console.error("Error creating ride", err);
