@@ -1,6 +1,6 @@
 const { body } = require("express-validator");
 
-exports.loginValidetor = [
+exports.loginValidater = [
   body("email")
     .notEmpty()
     .withMessage("Email is required")
