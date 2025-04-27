@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: ["http://localhost:5173", "https://tech-mobility0-0.vercel.app/"],
   credentials: true,
+  optionsSuccessStatus: 200,
 }));
 app.use(helmet());
 app.use(express.json());
