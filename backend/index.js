@@ -15,13 +15,14 @@ const http = require("http");
 const server = http.createServer(app); // Create the HTTP server
 
 const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors({
-  origin: ["http://localhost:5173", "https://tech-mobility0-0.vercel.app/"],
+const corsOptions = {
+  origin: ["http://localhost:5173", "https://tech-mobility0-0.vercel.app"],
   credentials: true,
   optionsSuccessStatus: 200,
-}));
+};
+
+// Middleware
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 
