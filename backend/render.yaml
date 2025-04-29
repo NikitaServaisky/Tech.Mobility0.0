@@ -6,9 +6,15 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
+      - key: PORT
+        fromEnv: PORT
+      - key: MONGO_USER
+        fromEnv: MONGO_USER
+      - key: MONGO_PASS
+        fromEnv: MONGO_PASS
       - key: JWT_SECRET_WORD
-        value: busStation
+        fromEnv: JWT_SECRET_WORD
       - key: ENCRYPTION_KEY
-        value: af18e98f25bc7a90bb3a4fe2b624df78c8126d7597e3a084b45d3a1e17a1f927
+        fromEnv: ENCRYPTION_KEY
       - key: MONGODB_URI
-        value: mongodb+srv://servaiski:ytomZp2DcdMGoCGc@<cluster-url>/test?retryWrites=true&w=majority
+        fromEnv: MONGODB_URI

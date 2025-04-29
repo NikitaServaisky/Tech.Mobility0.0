@@ -20,6 +20,7 @@ const initializeSocket = (server) => {
 
     socket.on("registerClient", (rideId) => {
       console.log("לקוח מחובר לנסיעה:", rideId);
+      socket.join(rideId);
     });
 
     socket.on("newRide", (rideData) => {
@@ -27,12 +28,26 @@ const initializeSocket = (server) => {
     });
 
     socket.on("rideAccepted", async (rideId, driverData) => {
-      // Your ride acceptance logic here…
+      console.log(`✅ נסיעה ${rideId} התקבלה ע"י נהג:`, driverData);
       io.emit("rideUpdate", { _id: rideId, status: "נלקח" });
     });
 
+    socket.on("rideRejected", (rideId) => {
+      console.log(`❌ נסיעה ${rideId} נדחתה`);
+      io.emit("rideUpdate", { _id: rideId, status: "Rejected" });
+    });
+
+    socket.on("driverLocationUpdate", ({ driverId, coords }) => {
+      console.log(`📍 מיקום נהג ${driverId}:`, coords);
+      io.emit("driverLocation", { driverId, coords });
+    });
+
     socket.on("disconnect", () => {
-      console.log("משתמש התנתק:", socket.id);
+      console.log("❎ משתמש התנתק:", socket.id);
+    });
+
+    socket.on("error", (err) => {
+      console.error("❗ שגיאה בסוקט:", err);
     });
   });
 };
