@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../../api/axios";
-import io from "socket.io-client";
 import List from "../../../assets/lists/list";
 import Button from "../../buttonComponent/button";
 import MapView from "../../mapComponent/mapView";
 import { getCleanUserId } from "../../../utils/clearUser";
-
+import { createSocket } from "../../../utils/createSocket";
+import { updateRidesState } from "../../../utils/rideHelpers";
 //creating socket
-const socket = io(import.meta.env.VITE_APP_API_URL, {
-  withCredentials: true,
-  transports: ["websocket", "polling"],
-});
+const socket = createSocket();
 
 const DriverDashboard = () => {
   //getting and saves driverId
@@ -20,6 +17,8 @@ const DriverDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [currentRide, setCurrentRide] = useState(null);
   const [driverStats, setDriverStats] = useState([]);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     const fetchRides = async () => {
@@ -52,18 +51,7 @@ const DriverDashboard = () => {
     };
 
     const handleRideUpdate = (updatedRide) => {
-      setRides((prev) => {
-        // אם הנסיעה כבר לא זמינה (כבר נלקחה או בוטלה)
-        if (updatedRide.status !== "Pending") {
-          return prev.filter((r) => r._id !== updatedRide._id);
-        }
-
-        // אם הנסיעה עדיין זמינה
-        const exists = prev.find((r) => r._id === updatedRide._id);
-        return exists
-          ? prev.map((r) => (r._id === updatedRide._id ? updatedRide : r))
-          : [...prev, updatedRide];
-      });
+      setRides((prev) => updateRidesState(prev, updatedRide));
     };
 
     fetchRides();
@@ -71,10 +59,19 @@ const DriverDashboard = () => {
 
     socket.on("rideUpdate", handleRideUpdate);
 
+    if (currentRide?._id) {
+      socket.emit("joinRoom", currentRide?._id);
+    }
+
+    socket.on("privateMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
     return () => {
       socket.off("rideUpdate", handleRideUpdate);
+      socket.off("privateMessage");
     };
-  }, [driverId]);
+  }, [driverId, currentRide]);
 
   //sharing location on realtime
   useEffect(() => {
@@ -144,7 +141,18 @@ const DriverDashboard = () => {
     }
   };
 
-  return  (
+  const sendMessage = () => {
+    if (message.trim()) {
+      socket.emit("privateMessage", {
+        rideId: currentRide?._id,
+        senderId: driverId,
+        message,
+      });
+      setMessage("");
+    }
+  };
+
+  return (
     <div className="driver-dashboard">
       {!currentRide ? (
         <>
@@ -189,6 +197,43 @@ const DriverDashboard = () => {
           <p>✅ נסיעות שאושרו: {driverStats.acceptedRides}</p>
           <p>❌ נסיעות שסורבו: {driverStats.rejectedRides}</p>
           <p>💰 רווח כולל: ₪{driverStats.totalEarnings}</p>
+        </div>
+      )}
+
+      {currentRide && (
+        <div className="chat-section">
+          <h3>💬 צ'אט עם הלקוח</h3>
+
+          <div className="chat-messages">
+            {messages.map((msg, idx) => (
+              <div key={idx} className="chat-message">
+                <strong>{msg.senderId === driverId ? "אתה:" : "לקוח:"}</strong>{" "}
+                {msg.message}
+              </div>
+            ))}
+          </div>
+
+          <div className="chat-input">
+            <input
+              type="text"
+              placeholder="כתוב הודעה ללקוח..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <Button
+              onClick={() => {
+                if (message.trim()) {
+                  socket.emit("privateMessage", {
+                    rideId: currentRide._id,
+                    senderId: driverId,
+                    message,
+                  });
+                  setMessage("");
+                }
+              }}
+              label="שלח"
+            />
+          </div>
         </div>
       )}
     </div>

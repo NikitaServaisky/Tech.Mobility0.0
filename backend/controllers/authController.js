@@ -23,7 +23,7 @@ const userLogin = async (req, res) => {
     const authToken = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET_WORD,
-      { expiresIn: "24h" }
+      { expiresIn: "1h" }
     );
 
     res.status(200).json({
@@ -138,7 +138,7 @@ const registerUser = async (req, res) => {
         const authToken = jwt.sign(
           { userId: newUser._id, role: newUser.role },
           process.env.JWT_SECRET_WORD,
-          { expiresIn: "24h" }
+          { expiresIn: "1h" }
         );
     
         return res.status(201).json({
@@ -175,7 +175,7 @@ const registerUser = async (req, res) => {
         const authToken = jwt.sign(
           { userId: newUser._id, role: newUser.role },
           process.env.JWT_SECRET_WORD,
-          { expiresIn: "24h" }
+          { expiresIn: "1h" }
         );
     
         return res.status(201).json({

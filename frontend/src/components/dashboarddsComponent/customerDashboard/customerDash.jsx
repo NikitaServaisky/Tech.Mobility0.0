@@ -6,16 +6,12 @@ import Button from "../../buttonComponent/button";
 import MapView from "../../mapComponent/mapView";
 import { geocodeAddress } from "../../../utils/geocode";
 import { getCleanUserId } from "../../../utils/clearUser";
+import { createSocket } from "../../../utils/createSocket";
+import { updateRidesState } from "../../../utils/rideHelpers";
 import "./customerDashStyle.css";
 
-// Verify that the backend URL is correct
-console.log("Backend URL:", import.meta.env.VITE_APP_API_URL);
-
 // Create socket instance
-const socket = io(import.meta.env.VITE_APP_API_URL, {
-  withCredentials: true,
-  transports: ["websocket", "polling"],
-});
+const socket = createSocket()
 
 const CustomerDashboard = () => {
   const [rides, setRides] = useState([]);
@@ -28,8 +24,11 @@ const CustomerDashboard = () => {
   const [activeRides, setActiveRides] = useState([]);
   const [rideHistory, setRideHistory] = useState([]);
   const [driverLocation, setDriverLocation] = useState({});
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const userId = getCleanUserId();
+  const rideId = activeRides[0]?._id;
 
   useEffect(() => {
     if (!userId) {
@@ -102,12 +101,7 @@ const CustomerDashboard = () => {
         setActiveRides((prev) => prev.filter((r) => r._id !== updatedRide._id));
       }
 
-      setRides((prev) => {
-        const exists = prev.find((r) => r._id === updatedRide._id);
-        return exists
-          ? prev.map((r) => (r._id === updatedRide._id ? updatedRide : r))
-          : [...prev, updatedRide];
-      });
+        setRides((prev) => updateRidesState(prev, updatedRide));
     });
 
     socket.on("driverLocation", ({ driverId, coords }) => {
@@ -117,11 +111,32 @@ const CustomerDashboard = () => {
       }));
     });
 
+    // socket for chat room customer
+    if (rideId) {
+      socket.emit("joinRoom", { rideId, userId });
+    }
+
+    socket.on("privateMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
     return () => {
       socket.off("rideUpdate");
       socket.off("driverLocation");
+      socket.off("privateMessage");
     };
-  }, []);
+  }, [rideId, userId]);
+
+  const sendMessage = () => {
+    if (message.trim()) {
+      socket.emit("privateMessage", {
+        rideId,
+        senderId: userId,
+        message,
+      });
+      setMessage("");
+    }
+  };
 
   // Creating new ride customer
   const handleNewRide = async () => {
@@ -223,6 +238,27 @@ const CustomerDashboard = () => {
         }}
         driverLocation={driverLocation}
       />
+      {rideId && (
+        <div className="chat-box">
+          <h3>צ'אט עם הנהג</h3>
+          <div className="messages">
+            {messages.map((msg, idx) => (
+              <p key={idx}>
+                <strong>{msg.senderId === userId ? "אתה" : "נהג"}:</strong>{" "}
+                {msg.message}
+              </p>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="כתוב הודעה לנהג..."
+          />
+          <Button onClick={sendMessage} label="שלח הודעה" />
+        </div>
+      )}
+
       <h3>נסיעות פעילות</h3>
       {activeRides.length > 0 ? (
         activeRides.map((ride) => (

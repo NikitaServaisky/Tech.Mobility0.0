@@ -42,6 +42,21 @@ const initializeSocket = (server) => {
       io.emit("driverLocation", { driverId, coords });
     });
 
+    socket.on("joinRoom", ({rideId, userId}) => {
+      socket.join(rideId);
+      socket.userId = userId,
+      socket.rideId = rideId,
+      console.log(`📦 משתמש ${socket.id} הצטרף לחדר: ${rideId}`);
+    });
+
+    socket.on("privateMessage", ({rideId, senderId, message}) => {
+      io.to(rideId).emit("privateMessage", {
+        senderId,
+        message,
+        timestamp: Date.now(),
+      });
+    });
+
     socket.on("disconnect", () => {
       console.log("❎ משתמש התנתק:", socket.id);
     });

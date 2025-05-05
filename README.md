@@ -85,9 +85,102 @@ npm run dev
 
 ---
 
-## 👨‍💻 Author
+## 📊 Data Models Overview
 
-Made with ❤️ by [Your Name]  
-Feel free to reach out or contribute in the future!
+### 🧍 Customer
+```js
+{
+  _id: ObjectId,
+  name: String,
+  email: String,
+  phone: String,
+  passwordHash: String,
+  rideHistory: [RideId],
+  totalSpent: Number
+}
+```
+
+### 🚘 Driver
+```js
+{
+  _id: ObjectId,
+  name: String,
+  email: String,
+  phone: String,
+  passwordHash: String,
+  vehicleInfo: {
+    type: String,
+    model: String,
+    plateNumber: String
+  },
+  stats: {
+    totalRides: Number,
+    accepted: Number,
+    rejected: Number,
+    totalEarnings: Number
+  },
+  documents: {
+    driverLicense: String,
+    vehiclePhoto: String
+  },
+  isAvailable: Boolean
+}
+```
+
+### 🧾 Ride
+```js
+{
+  _id: ObjectId,
+  customerId: ObjectId,
+  driverId: ObjectId | null,
+  pickup: { lat: Number, lng: Number, address: String },
+  destination: { lat: Number, lng: Number, address: String },
+  status: "pending" | "active" | "completed" | "cancelled" | "rejected",
+  price: Number,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
 ---
+
+## 🧪 Testing
+
+- Use **Postman** or **Thunder Client** to simulate API flows
+- Include JWT in the `Authorization: Bearer <token>` header
+- Socket.IO events require auth payload upon connection
+
+---
+
+## 📦 Environment Variables
+
+### Backend `.env`:
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/taxi
+JWT_SECRET=your_secret_key
+GRAPH_HOPPER_KEY=your_key
+```
+
+### Frontend `.env`:
+```
+VITE_APP_API_URL=http://localhost:5000
+```
+
+---
+
+## 🛡️ Security & Validation
+
+- JWT-based role-authenticated access control
+- Multer-based file filtering (MIME type, size)
+- Route protection via middleware
+- Input validation via `express-validator`
+
+---
+
+## 👨‍💻 Author
+
+Made with ❤️ by **Nikita Servaisky**  
+[GitHub – NikitaServaisky](https://github.com/NikitaServaisky)
+
+> Open to collaboration and feedback — feel free to fork or submit a pull request.
