@@ -88,6 +88,7 @@ npm run dev
 ## 📊 Data Models Overview
 
 ### 🧍 Customer
+
 ```js
 {
   _id: ObjectId,
@@ -101,6 +102,7 @@ npm run dev
 ```
 
 ### 🚘 Driver
+
 ```js
 {
   _id: ObjectId,
@@ -128,6 +130,7 @@ npm run dev
 ```
 
 ### 🧾 Ride
+
 ```js
 {
   _id: ObjectId,
@@ -155,6 +158,7 @@ npm run dev
 ## 📦 Environment Variables
 
 ### Backend `.env`:
+
 ```
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/taxi
@@ -163,6 +167,7 @@ GRAPH_HOPPER_KEY=your_key
 ```
 
 ### Frontend `.env`:
+
 ```
 VITE_APP_API_URL=http://localhost:5000
 ```
@@ -177,6 +182,65 @@ VITE_APP_API_URL=http://localhost:5000
 - Input validation via `express-validator`
 
 ---
+
+## 🧪 Manual Testing Guide
+
+You can test the system using:
+
+🔹 Postman / Thunder Client
+Login
+
+POST /login
+body: { email, password }
+✅ Returns JWT token.
+
+Create Ride
+
+POST /rides/create-ride
+headers: Authorization: Bearer <token>
+body: pickup & destination coordinates
+
+Accept Ride
+
+PUT /rides/:rideId/accept
+headers: Authorization: Bearer <driver_token>
+✅ Status updates to "accepted"
+
+Cancel Ride
+
+PUT /rides/:rideId/cancel
+
+Emit Socket Events (via client)
+
+joinRoom, rideUpdate, chatMessage, etc.
+
+🔹 Frontend Testing
+Open customer dashboard → order ride → watch ride updates
+
+Login as driver in another tab → accept ride → see real-time map and chat
+
+Verify:
+
+Location updates
+
+Ride state transitions
+
+Messages only go through between matched driver/customer
+
+---
+
+## 🔧 Recent Progress – May 6, 2025
+
+- Refactored the customer dashboard:
+  - Extracted real-time socket handling to a custom hook `useCustomerSocket`.
+  - Moved the ride list rendering logic into a reusable component `RideList`.
+  - Integrated the modular `ChatBox` component into the dashboard.
+  - Replaced inline API calls with centralized functions from `rideApi.js`.
+
+- Improved code maintainability and readability:
+  - Reduced complexity inside `CustomerDashboard`.
+  - Enabled easier reuse for future organizational or driver dashboards.
+
 
 ## 👨‍💻 Author
 

@@ -152,6 +152,25 @@ const DriverDashboard = () => {
     }
   };
 
+  const handleCompleteRide = async () => {
+    try {
+      const response = await axiosInstance.put(`/rides/${currentRide._id}/complete`);
+      console.log("Ride Completed:", response.data);
+
+      socket.emit("rideCompleted", {
+        rideId: currentRide._id,
+        message: "Ride completed successfully",
+      })
+
+      alert("The ride is complete!");
+      setCurrentRide(null);
+
+    } catch (err) {
+      console.error("Error completing ride:", err);
+      alert("Error un completing ride");
+    }
+  }
+
   return (
     <div className="driver-dashboard">
       {!currentRide ? (
@@ -221,20 +240,18 @@ const DriverDashboard = () => {
               onChange={(e) => setMessage(e.target.value)}
             />
             <Button
-              onClick={() => {
-                if (message.trim()) {
-                  socket.emit("privateMessage", {
-                    rideId: currentRide._id,
-                    senderId: driverId,
-                    message,
-                  });
-                  setMessage("");
-                }
-              }}
+              onClick={sendMessage}
               label="שלח"
             />
           </div>
         </div>
+      )}
+
+      {currentRide && (
+        <Button 
+          onClick={handleCompleteRide}
+          label={"finish"}
+        />
       )}
     </div>
   );

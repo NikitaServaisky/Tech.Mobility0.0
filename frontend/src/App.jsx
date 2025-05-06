@@ -13,7 +13,7 @@ import ProtectedRoute from "./components/protectionConponent/protection";
 import Dashboard from "./pages/dashboards";
 import DriverDashboard from "./components/dashboarddsComponent/driverDashboard/driverDash";
 import OrganizationDashboard from "./components/dashboarddsComponent/organizationDash";
-import CustomerDashboard from "./components/dashboarddsComponent/customerDashboard/customerDash";
+import CustomerDashboard from "./pages/customerDashboard/customerDash";
 
 function App() {
   console.log('all variabels for .env', import.meta.env);

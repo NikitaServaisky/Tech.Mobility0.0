@@ -10,6 +10,7 @@ const {
   rejectRide,
   requestJoinRide,
   approveJoinRequest,
+  completeRide,
 } = require("../controllers/ridesController");
 const { createRideValidator } = require("../validators/ridesValidator");
 const validate = require("../middlewares/ValidateRequestMidleware");
@@ -28,5 +29,6 @@ router.put(
   authMiddleware,
   approveJoinRequest
 );
+router.put('/:rideId/complete', authMiddleware, completeRide);
 
 module.exports = router;

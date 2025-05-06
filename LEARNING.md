@@ -121,6 +121,40 @@ Using **Multer**:
 
 ---
 
+## 💬 Secure Chat Between Driver & Customer
+
+Real-time communication between the customer and the driver — **only during active rides**.
+
+### ⚙️ How It Works
+
+- When a ride starts, both users join a dedicated Socket.IO room (`joinRoom`).
+- Messages are sent via the `chatMessage` event:
+  - Validates: `rideId`, `senderId`, and `message`.
+  - Verifies sender is either `driverId` or `customerId` of the ride.
+  - Sanitizes message (removes HTML, scripts, and limits length).
+  - Broadcasts to the room if valid.
+
+### 🔒 Security Features
+
+- **Authorization check**: Messages only sent if sender belongs to the ride.
+- **XSS protection**: All messages pass through `sanitizeMessage()`.
+- **Spam prevention**: Long messages are truncated at 1000 characters.
+
+### 🧪 Events
+
+| Event Name        | Direction        | Description                            |
+|-------------------|------------------|----------------------------------------|
+| `joinRoom`        | client → server  | User joins ride-specific room          |
+| `chatMessage`     | client ↔ server  | Secure, validated message broadcast    |
+| `chatError`       | server → client  | Error if unauthorized or failed checks |
+
+### 🗂️ Code References
+
+- `/services/socket.js` → `chatMessage` handler  
+- `/utils/sanitize.js` → `sanitizeMessage(msg)`  
+- `DriverDashboard.jsx` / `CustomerDashboard.jsx` → client emit/listen logic
+
+
 ## 🌐 Deployment & Environment Setup
 
 - Split codebase: `frontend/` and `backend/`
@@ -184,3 +218,17 @@ This document is continuously updated throughout development.
 - **Socket.IO Event:** `rideCompleted`
 - **To:** The customer
 - **Content:** Ride is done – optional: feedback prompt, stats update
+
+## 📆 May 6, 2025
+
+### What I learned today:
+- How to extract reusable logic into React hooks (custom hook for Socket.IO).
+- The power of separation of concerns in React – moving chat, ride list, and socket logic out of the main dashboard.
+- Better folder and import organization for large components.
+- Practical use of async/await with `Promise.all` to optimize API data fetching.
+- Writing cleaner and testable functional components.
+
+### Next focus:
+- Modularize map and address input logic.
+- Add loading spinners or skeletons.
+- Write first unit test for `RideList` or `useCustomerSocket`.

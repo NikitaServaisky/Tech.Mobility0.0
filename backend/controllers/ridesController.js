@@ -305,6 +305,37 @@ const approveJoinRequest = async (req, res) => {
   }
 };
 
+const completeRide = async (req, res) => {
+  const {rideId} = req.params;
+  const driverId = req.user.id;
+
+  try{
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({message: "Ride not found"});
+
+    if (ride.driverId.toString() !== driverId) return res.status(403).json({message: "Not your ride"});
+
+    if (!["InProgress", "Accepted"].includes(ride.status)) {
+      return res.status(400).json({ message: "Ride not in progress" });
+    }
+    
+    ride.status = "Completed";
+    ride.updatedAt = Date.now();
+    await ride.save();
+
+    const io = getIO();
+    io.to(rideId).emit("rideCompleted", {
+      rideId,
+      message: "Ride is completed",
+    });
+
+    res.json({message: "Ride completed successfully", ride});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({message: "Server error"});
+  }
+}
+
 module.exports = {
   getRides,
   createRide,
@@ -315,4 +346,5 @@ module.exports = {
   rejectRide,
   requestJoinRide,
   approveJoinRequest,
+  completeRide,
 };
