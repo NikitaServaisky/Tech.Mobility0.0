@@ -142,18 +142,17 @@ Real-time communication between the customer and the driver — **only during ac
 
 ### 🧪 Events
 
-| Event Name        | Direction        | Description                            |
-|-------------------|------------------|----------------------------------------|
-| `joinRoom`        | client → server  | User joins ride-specific room          |
-| `chatMessage`     | client ↔ server  | Secure, validated message broadcast    |
-| `chatError`       | server → client  | Error if unauthorized or failed checks |
+| Event Name    | Direction       | Description                            |
+| ------------- | --------------- | -------------------------------------- |
+| `joinRoom`    | client → server | User joins ride-specific room          |
+| `chatMessage` | client ↔ server | Secure, validated message broadcast    |
+| `chatError`   | server → client | Error if unauthorized or failed checks |
 
 ### 🗂️ Code References
 
-- `/services/socket.js` → `chatMessage` handler  
-- `/utils/sanitize.js` → `sanitizeMessage(msg)`  
+- `/services/socket.js` → `chatMessage` handler
+- `/utils/sanitize.js` → `sanitizeMessage(msg)`
 - `DriverDashboard.jsx` / `CustomerDashboard.jsx` → client emit/listen logic
-
 
 ## 🌐 Deployment & Environment Setup
 
@@ -181,40 +180,48 @@ This document is continuously updated throughout development.
 ## 🚕 Ride Flow — Step-by-Step Breakdown
 
 ### 1. Customer Sends Ride Request
+
 - **API:** `POST /rides`
 - **Payload:** Pickup & destination coordinates
 - **Action:** Server saves new ride with status `"pending"`
 
 ### 2. Server Notifies Drivers
+
 - **Socket.IO Event:** `rideUpdate`
 - **To:** All available drivers
 - **Content:** New ride request details
 
 ### 3. Driver Accepts Ride
+
 - **API:** `PUT /rides/:rideId/accept`
 - **Auth:** JWT from driver
 - **Action:** Server updates ride to `"accepted"` and links driver
 
 ### 4. Server Notifies Customer
+
 - **Socket.IO Event:** `rideAccepted`
 - **To:** The requesting customer
 - **Content:** Assigned driver info
 
 ### 5. Driver Sends Location Updates
+
 - **Socket.IO Event:** `driverLocationUpdate`
 - **Interval:** Every 2–3 seconds
 - **To:** The customer
 - **Content:** Driver’s current coordinates
 
 ### 6. Customer Sees Driver on Map
+
 - **Client Logic:** Listens to `driverLocationUpdate`
 - **Map View:** Updates driver's marker on map in real-time
 
 ### 7. Driver Marks Ride as Complete
+
 - **API:** `PUT /rides/:rideId/complete`
 - **Action:** Server updates ride status to `"completed"`
 
 ### 8. Server Sends Final Status
+
 - **Socket.IO Event:** `rideCompleted`
 - **To:** The customer
 - **Content:** Ride is done – optional: feedback prompt, stats update
@@ -222,6 +229,7 @@ This document is continuously updated throughout development.
 ## 📆 May 6, 2025
 
 ### What I learned today:
+
 - How to extract reusable logic into React hooks (custom hook for Socket.IO).
 - The power of separation of concerns in React – moving chat, ride list, and socket logic out of the main dashboard.
 - Better folder and import organization for large components.
@@ -229,6 +237,35 @@ This document is continuously updated throughout development.
 - Writing cleaner and testable functional components.
 
 ### Next focus:
+
 - Modularize map and address input logic.
 - Add loading spinners or skeletons.
 - Write first unit test for `RideList` or `useCustomerSocket`.
+
+## 🗓️ Daily Log – 7 May 2025
+
+- ✅ Finished refactoring DriverDashboard:
+  - Separated logic into `useDriverSocket`
+  - Used same architecture as customer side
+  - Confirmed real-time updates & chat
+- 🧠 Learned how to unify logic across roles
+- 🔜 Next: Clean up auth flow + test file upload validations
+
+## 🗓️ Daily Log – 8 May 2025
+
+- ✅ What was completed:
+  - Extracted driver location listener logic into a dedicated hook: useDriverLocationListener.
+  - Extracted address input and coordinate picking logic into useAddressPicker.
+  - Added resolveAddresses() for geocoding and reset() to clear the form state.
+  - Integrated MapView and address form with the new hooks in CustomerDashboard.
+    -Cleaned up legacy code and improved overall modularity.
+
+## 🧠 What I learned:
+- How to separate user input logic into reusable hooks (Separation of Concerns).
+- How to use custom hooks to manage ride creation and map interaction.
+- How to keep CustomerDashboard clean, readable, and easier to maintain.
+
+## 🔜 Next steps:
+
+- Apply similar refactoring to DriverDashboard.
+- Write unit tests for useAddressPicker and useDriverLocationListener.

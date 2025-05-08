@@ -12,7 +12,6 @@ export const useCustomerSocket = ({
   setRideHistory,
 }) => {
   const [messages, setMessages] = useState([]);
-  const [driverLocation, setDriverLocation] = useState({});
 
   useEffect(() => {
     socket.on("rideUpdate", (updatedRide) => {
@@ -39,13 +38,6 @@ export const useCustomerSocket = ({
       setRides((prev) => updateRidesState(prev, updatedRide));
     });
 
-    socket.on("driverLocation", ({ driverId, coords }) => {
-      setDriverLocation((prev) => ({
-        ...prev,
-        [driverId]: coords,
-      }));
-    });
-
     socket.on("privateMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -56,10 +48,9 @@ export const useCustomerSocket = ({
 
     return () => {
       socket.off("rideUpdate");
-      socket.off("driverLocation");
       socket.off("privateMessage");
     };
   }, [rideId, userId]);
 
-  return { socket, messages, setMessages, driverLocation };
+  return { socket, messages, setMessages, };
 };

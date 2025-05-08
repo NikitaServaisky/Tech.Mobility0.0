@@ -1,12 +1,14 @@
+// 1. React
 import React, { useState, useEffect } from "react";
-import List from "../../assets/lists/list";
-import Button from "../../components/buttonComponent/button";
-import MapView from "../../components/mapComponent/mapView";
-import ChatBox from "../../components/chatComponents/ChatBox";
-import RideList from "../../components/rideComponents/RideList";
+
+// 2. Utils & Hooks
 import { geocodeAddress } from "../../utils/geocode";
 import { getCleanUserId } from "../../utils/clearUser";
 import { useCustomerSocket } from "../../hooks/useCustomerSocket";
+import { useDriverLocationListener } from "../../hooks/useDriverLocationListner";
+import { useAddressPicker } from "../../hooks/useAddressPicker";
+
+// 3. API
 import {
   fetchActiveRides,
   fetchRides,
@@ -14,16 +16,21 @@ import {
   createRide,
   cancelRide,
 } from "../../api/rideApi";
+
+// 4. Components
+import List from "../../assets/lists/list";
+import Button from "../../components/buttonComponent/button";
+import MapView from "../../components/mapComponent/mapView";
+import ChatBox from "../../components/chatComponents/ChatBox";
+import RideList from "../../components/rideComponents/RideList";
+
+// 5. Styles
 import "./customerDashStyle.css";
 
 const CustomerDashboard = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pickup, setPickup] = useState(null);
-  const [destination, setDestination] = useState(null);
   const [clickCount, setClickCount] = useState(0);
-  const [pickupAddress, setPickupAddress] = useState("");
-  const [destinationAddress, setDestinationAddress] = useState("");
   const [activeRides, setActiveRides] = useState([]);
   const [rideHistory, setRideHistory] = useState([]);
   const [message, setMessage] = useState("");
@@ -31,13 +38,28 @@ const CustomerDashboard = () => {
   const userId = getCleanUserId();
   const rideId = activeRides[0]?._id;
 
-  const { socket, messages, setMessages, driverLocation } = useCustomerSocket({
+  const { socket, messages, setMessages } = useCustomerSocket({
     userId,
     rideId,
     setRides,
     setActiveRides,
     setRideHistory,
   });
+
+  const driverLocation = useDriverLocationListener(socket);
+  const {
+    pickup,
+    destination,
+    pickupAddress,
+    destinationAddress,
+    setPickupAddress,
+    setDestinationAddress,
+    setPickup,
+    setDestination,
+    handleMapClick,
+    resolveAddresses,
+    reset,
+  } = useAddressPicker();
 
   useEffect(() => {
     if (!userId) {
@@ -80,17 +102,16 @@ const CustomerDashboard = () => {
 
   const handleNewRide = async () => {
     try {
-      const pickupCoords = await geocodeAddress(pickupAddress);
-      const destinationCoords = await geocodeAddress(destinationAddress);
-
+      const { pickupCoords, destinationCoords } = await resolveAddresses();
+  
       if (!pickupCoords || !destinationCoords) {
         alert("נא להזין כתובות תקינות לאיסוף וליעד.");
         return;
       }
-
+  
       setPickup(pickupCoords);
       setDestination(destinationCoords);
-
+  
       const newRide = {
         userId,
         from: pickupAddress,
@@ -99,14 +120,18 @@ const CustomerDashboard = () => {
         destinationCoords,
         status: "Pending",
       };
-
+  
       const response = await createRide(newRide);
       socket.emit("newRide", response.data);
+
+      reset();
+      
     } catch (err) {
       console.error("Error creating ride", err);
       alert("משהו השתבש בעת יצירת הנסיעה.");
     }
   };
+  
 
   const handleCancelRide = async (rideId) => {
     try {
@@ -154,7 +179,7 @@ const CustomerDashboard = () => {
         />
         <Button onClick={handleNewRide} label="הזמן נהג" />
       </div>
-
+      {/* 
       <MapView
         pickup={pickup}
         destination={destination}
@@ -171,6 +196,13 @@ const CustomerDashboard = () => {
             setClickCount(1);
           }
         }}
+        driverLocation={driverLocation}
+      /> */}
+
+      <MapView
+        pickup={pickup}
+        destination={destination}
+        onPickupSelect={handleMapClick}
         driverLocation={driverLocation}
       />
 
